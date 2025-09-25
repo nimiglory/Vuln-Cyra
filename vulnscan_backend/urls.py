@@ -22,5 +22,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("scanner.urls")),  # all scanner + auth routes
     path("accounts/", include("allauth.urls")),  # optional browser-based auth
-    path("", views.home, name="home"),  # homepage
+    # path("", views.home, name="home"),  # homepage
 ]

@@ -1,0 +1,6 @@
+.env
+.sql
+.dump
+.conf
+.pgpass
+.pg_service.conf
