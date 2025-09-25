@@ -3,4 +3,4 @@
 .dump
 .conf
 .pgpass
-.pg_service.conf
+.pg_service.confvulnscan_backend/settings.py
