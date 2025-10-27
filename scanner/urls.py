@@ -34,7 +34,7 @@ urlpatterns = [
     path("scan/", views.create_scan_result, name="create_scan"),
     path("results/<int:scan_id>/", views.get_scan_result_by_id, name="scan_result"),  # Get result by ID
     path("results/", views.get_scan_results, name="latest_scan"),  # Get latest scan only
-    path("findings/", views.findings, name="findings"),  # ✅ add findings filter endpoint
+    path("findings/", views.findings, name="findings"),  
 
     # Custom auth (your JWT-enabled views)
     path("signup/", views.signup, name="signup"),
@@ -51,5 +51,5 @@ urlpatterns = [
     # dj-rest-auth / allauth endpoints (optional: social login, registration, etc.)
     path("auth/", include("dj_rest_auth.urls")),
     path("auth/registration/", include("dj_rest_auth.registration.urls")),
-    path("auth/social/", include("allauth.socialaccount.urls")),
+    # path("auth/social/", include("allauth.socialaccount.urls")),
 ]

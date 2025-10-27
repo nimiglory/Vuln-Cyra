@@ -4,13 +4,52 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth import authenticate
 from .models import ScanResult
-from django.contrib.auth import authenticate
+import json
+
+# In your serializer
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email']  # ✅ Include ID
 
 class ScanResultSerializer(serializers.ModelSerializer):
+    open_ports = serializers.SerializerMethodField()
+    sql_injection = serializers.SerializerMethodField()
+    xss = serializers.SerializerMethodField()
+    recommendations = serializers.SerializerMethodField()
+
     class Meta:
         model = ScanResult
-        fields = '__all__'
+        fields = "__all__"
 
+    def get_open_ports(self, obj):
+        if obj.open_ports:
+            try:
+                return obj.open_ports.split("\n")  # stored as newline string
+            except Exception:
+                return []
+        return []
+
+    def get_sql_injection(self, obj):
+        if obj.sql_injection:
+            try:
+                return json.loads(obj.sql_injection)
+            except Exception:
+                return {"raw": obj.sql_injection}
+        return None
+
+    def get_xss(self, obj):
+        if obj.xss:
+            try:
+                return json.loads(obj.xss)
+            except Exception:
+                return {"raw": obj.xss}
+        return None
+
+    def get_recommendations(self, obj):
+        if obj.recommendations:
+            return obj.recommendations.split("\n")  # return as list
+        return []
 
 
 # ✅ Signup Serializer (with duplicate email validation)
@@ -51,3 +90,4 @@ class SigninSerializer(serializers.Serializer):
 
         data["user"] = user
         return data
+

@@ -16,10 +16,4 @@ def basic_scrape_info(url):
 
 
 
-# # ✅ Path to your project base directory
-# BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# NMAP_PATH = r"C:\Users\Glory.Asifamabia\Desktop\Vuln Cyra\venv\Lib\site-packages\nmap"
-# SQLMAP_PATH = r"C:\Users\Glory.Asifamabia\Desktop\Vuln Cyra\venv\Scripts"
 
-# # ✅ Path to your virtual environment scripts (if you need to call python/sqlmap inside venv)
-# VENV_SCRIPTS_PATH = r"C:\Users\Glory.Asifamabia\Desktop\Vuln Cyra\venv\Scripts\python.exe"
