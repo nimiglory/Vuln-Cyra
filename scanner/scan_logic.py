@@ -19,7 +19,6 @@ def scan_sql_injection(url):
     """
     Optimized: Reduced payloads and added timeout
     """
-    # ⚡ Reduced from 4 to 2 most effective payloads
     payloads = ["' OR '1'='1", "';--"]
     parsed = urlparse(url)
     base_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}"
@@ -32,14 +31,13 @@ def scan_sql_injection(url):
         for payload in payloads:
             test_params = {k: (payload if k == param else v[0]) for k, v in params.items()}
             try:
-                # ⚡ Reduced timeout from 10s to 3s
                 response = requests.get(base_url, params=test_params, timeout=3)
                 if any(err in response.text.lower() for err in [
                     "sql syntax", "mysql", "syntax error", "odbc", "ora-00933", "unclosed quotation"
                 ]):
                     vulnerable = True
                     details.append({"parameter": param, "payload": payload, "status": "Vulnerable"})
-                    break  # ⚡ Stop testing this param if vulnerable
+                    break
             except requests.RequestException:
                 details.append({"parameter": param, "payload": payload, "status": "Error"})
 
@@ -48,11 +46,10 @@ def scan_sql_injection(url):
 
     return {
         "type": "SQL Injection",
-        "status": status,
+        "status": status,  # ✅ This field is critical - it's what findings view checks
         "details": details if details else "No obvious injection found",
         "risk_level": risk_level,
     }
-
 
 def scan_xss(url):
     """

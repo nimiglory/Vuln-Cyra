@@ -13,7 +13,6 @@ from decouple import config
 
 from pathlib import Path
 
-# NMAP_PATH = r"C:\Program Files (x86)\Nmap\nmap.exe"
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -32,15 +31,6 @@ ALLOWED_HOSTS = []
 
 REST_USE_JWT = True 
 
-
-
-# Application definition
-# from decouple import config
-
-# GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
-# GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
-# GITHUB_CLIENT_ID = config("GITHUB_CLIENT_ID")
-# GITHUB_CLIENT_SECRET = config("GITHUB_CLIENT_SECRET")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -87,10 +77,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # CRA default
 ]
 
-# CORS_ALLOWED_ORIGINS = [
-#     "http://localhost:5173",  # React dev server
-# ]
-
 # allow cookies/session auth
 CORS_ALLOW_CREDENTIALS = True
 
@@ -118,24 +104,6 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'APP': {
-#             'client_id': config('GOOGLE_CLIENT_ID'),
-#             'secret': config('GOOGLE_CLIENT_SECRET'),
-#             'key': ''
-#         }
-#     },
-#     'github': {
-#         'APP': {
-#             'client_id': config('GITHUB_CLIENT_ID'),
-#             'secret': config('GITHUB_CLIENT_SECRET'),
-#             'key': ''
-#         }
-#     }
-# }
-
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
@@ -145,14 +113,6 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
 SOCIALACCOUNT_AUTO_SIGNUP = True
 
-
-# Simple JWT (tweak to taste)
-# from datetime import timedelta
-# SIMPLE_JWT = {
-#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
-#     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-#     "AUTH_HEADER_TYPES": ("Bearer",),
-# }
 
 from datetime import timedelta
 
@@ -244,9 +204,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# settings.py
-# NMAP_PATH = r"C:\Program Files (x86)\Nmap\nmap.exe" 
-# SQLMAP_PATH = r"C:\Users\Glory.Asifamabia\Downloads\sqlmap\sqlmap\sqlmap.py"
 
-# "C:\Users\Glory.Asifamabia\Downloads\sqlmap\sqlmap\sqlmap.py"
 

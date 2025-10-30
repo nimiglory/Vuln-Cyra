@@ -18,7 +18,6 @@ from .serializers import ScanResultSerializer
 from .scan_logic import scan_sql_injection, scan_xss, scan_open_ports, validate_url
 from .scanner import run_full_scan
 from .utils import basic_scrape_info
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import SignupSerializer, SigninSerializer
 from rest_framework.views import APIView
@@ -28,9 +27,7 @@ from django.utils.timezone import now
 import requests
 from django.conf import settings
 
-# -----------------------
-# Helpers
-# -----------------------
+
 def generate_recommendations(sql_res, xss_res, ports_res):
     recommendations = []
     if sql_res.get("status") == "Vulnerable" or sql_res.get("risk_level") == "High":
@@ -423,6 +420,7 @@ def search_scan_results(request):
 def findings(request):
     """
     Returns findings filtered by timeframe OR specific scan_id
+    Ordered consistently by creation date (newest first)
     """
     try:
         scan_id = request.GET.get('scan_id', None)
@@ -435,7 +433,7 @@ def findings(request):
                 user=request.user,
                 id=scan_id,
                 status='completed'
-            )
+            ).order_by('-created_at')  # ✅ Add explicit ordering
         else:
             # Filter by timeframe
             if timeframe == '1w':
@@ -449,7 +447,7 @@ def findings(request):
                 user=request.user,   
                 created_at__gte=cutoff,
                 status='completed'
-            ).order_by('-created_at')
+            ).order_by('-created_at')  # ✅ Newest first
 
         findings_list = []
 
@@ -464,6 +462,7 @@ def findings(request):
                         vulnerabilities.append({
                             'type': 'SQL Injection',
                             'severity': 'High',
+                            'priority': 3,  # ✅ Add priority for sorting
                             'recommendation': (
                                 "Implement parameterized queries or prepared statements to prevent SQL injection attacks. "
                                 "Use ORM frameworks that automatically sanitize inputs. "
@@ -471,8 +470,8 @@ def findings(request):
                                 "Enable Web Application Firewall (WAF) rules to detect and block SQL injection attempts."
                             )
                         })
-            except:
-                pass
+            except Exception as e:
+                print(f"Error parsing SQL injection: {e}")
             
             # Parse XSS
             try:
@@ -484,6 +483,7 @@ def findings(request):
                         vulnerabilities.append({
                             'type': 'Cross-Site Scripting (XSS)',
                             'severity': 'High',
+                            'priority': 3,  # ✅ Add priority for sorting
                             'affected_params': params,
                             'recommendation': (
                                 "Sanitize and encode all user-supplied data before rendering in HTML, JavaScript, or CSS contexts. "
@@ -493,8 +493,8 @@ def findings(request):
                                 "Enable HTTPOnly and Secure flags on all cookies to prevent session hijacking."
                             )
                         })
-            except:
-                pass
+            except Exception as e:
+                print(f"Error parsing XSS: {e}")
             
             # Parse Open Ports
             try:
@@ -503,7 +503,16 @@ def findings(request):
                     port_count = len([p for p in ports_list if p])
                     
                     if port_count > 0:
-                        severity = 'High' if port_count > 5 else 'Medium' if port_count > 2 else 'Low'
+                        # Determine severity
+                        if port_count > 5:
+                            severity = 'High'
+                            priority = 3
+                        elif port_count > 2:
+                            severity = 'Medium'
+                            priority = 2
+                        else:
+                            severity = 'Low'
+                            priority = 1
                         
                         # Professional recommendation based on severity
                         if severity == 'High':
@@ -534,16 +543,22 @@ def findings(request):
                         vulnerabilities.append({
                             'type': 'Open Ports',
                             'severity': severity,
+                            'priority': priority,  # ✅ Add priority for sorting
                             'port_count': port_count,
                             'recommendation': recommendation
                         })
-            except:
-                pass
+            except Exception as e:
+                print(f"Error parsing open ports: {e}")
+            
+            # ✅ Sort vulnerabilities by priority (High -> Medium -> Low)
+            vulnerabilities.sort(key=lambda v: v.get('priority', 0), reverse=True)
+            
             if show_all:
+                # Show all vulnerabilities for this scan
                 for vuln in vulnerabilities:
                     findings_list.append({
-                        'id': f"{scan.id}-{vuln['type'].lower().replace(' ', '-')}",
-                        'scan_id': scan.id,  # ✅ ADD THIS
+                        'id': f"{scan.id}-{vuln['type'].lower().replace(' ', '-').replace('(', '').replace(')', '')}",
+                        'scan_id': str(scan.id),
                         'url': scan.url,
                         'vulnerability': vuln['type'],
                         'severity': vuln['severity'],
@@ -551,10 +566,11 @@ def findings(request):
                         'scan_date': scan.created_at.isoformat()
                     })
                 
+                # If no vulnerabilities found
                 if not vulnerabilities:
                     findings_list.append({
-                        'id': scan.id,
-                        'scan_id': scan.id,  # ✅ ADD THIS
+                        'id': str(scan.id),
+                        'scan_id': str(scan.id),
                         'url': scan.url,
                         'vulnerability': 'No Issues Found',
                         'severity': 'Low',
@@ -562,13 +578,14 @@ def findings(request):
                         'scan_date': scan.created_at.isoformat()
                     })
             else:
+                # Show only the most critical vulnerability per scan
                 if vulnerabilities:
                     severity_order = {'High': 3, 'Medium': 2, 'Low': 1}
                     most_critical = max(vulnerabilities, key=lambda v: severity_order.get(v['severity'], 0))
                     
                     findings_list.append({
-                        'id': scan.id,
-                        'scan_id': scan.id,  # ✅ ADD THIS
+                        'id': str(scan.id),
+                        'scan_id': str(scan.id),
                         'url': scan.url,
                         'vulnerability': most_critical['type'],
                         'severity': most_critical['severity'],
@@ -578,8 +595,8 @@ def findings(request):
                     })
                 else:
                     findings_list.append({
-                        'id': scan.id,
-                        'scan_id': scan.id,  # ✅ ADD THIS
+                        'id': str(scan.id),
+                        'scan_id': str(scan.id),
                         'url': scan.url,
                         'vulnerability': 'No Issues Found',
                         'severity': 'Low',
@@ -587,6 +604,15 @@ def findings(request):
                         'scan_date': scan.created_at.isoformat(),
                         'total_issues': 0
                     })
+        
+        # ✅ Final sort: High severity first, then by date
+        findings_list.sort(
+            key=lambda x: (
+                {'High': 3, 'Medium': 2, 'Low': 1}.get(x['severity'], 0),
+                x['scan_date']
+            ),
+            reverse=True
+        )
         
         return Response(findings_list)
         
@@ -596,25 +622,10 @@ def findings(request):
         traceback.print_exc()
         return Response({"error": "Failed to fetch findings"}, status=500)
            
-          
-
-
-# Usage from frontend:
-# /api/findings/                    → Shows 1 finding per scan (most critical)
-# /api/findings/?show_all=true     → Shows all vulnerabilities separately    
-# In your Django view
-# class FindingsView(APIView):
-#     permission_classes = [IsAuthenticated]
-    
-    def get(self, request):
+def get(self, request):
         # ✅ Filter by user
         findings = findings.objects.filter(user=request.user)
         serializer = FindingSerializer(findings, many=True)
         return Response(serializer.data)
     
-def update_url_history(url, findings, scan_id):
-    risk_level = findings["risk_assessment"]["overall_risk_level"]
-    UrlScanHistory.objects.update_or_create(
-        url=url,
-        defaults={"last_risk_level": risk_level, "last_scan_id": scan_id}
-    )
+

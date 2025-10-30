@@ -21,7 +21,16 @@ class ScanResult(models.Model):
         return self.url
 
 class UrlScanHistory(models.Model):
-    url = models.URLField(unique=True)
+    url = models.URLField()
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)  # ✅ Add user
     last_risk_level = models.CharField(max_length=10)
     last_scan_id = models.UUIDField()
     updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        # ✅ Make url unique per user, not globally
+        unique_together = ['url', 'user']
+        ordering = ['-updated_at']
+    
+    def __str__(self):
+        return f"{self.url} - {self.last_risk_level}"
