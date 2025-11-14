@@ -73,13 +73,18 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
+    "https://vuln-cyra-frontend.vercel.app/"
     "http://localhost:5173",  # Vite default
     "http://localhost:3000",  # CRA default
-    "https://vuln-cyra-frontend.vercel.app/"
 ]
 
 # allow cookies/session auth
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://vuln-cyra-frontend.vercel.app",
+]
+
 
 
 REST_FRAMEWORK = {
