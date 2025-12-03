@@ -74,7 +74,8 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://vuln-cyra-frontend.vercel.app/",
+    # "https://vuln-cyra-frontend.vercel.app/",
+    "https://vuln-cyra-frontend-sable.vercel.app/",
     "http://localhost:5173",  # Vite default
     "http://localhost:3000",  # CRA default
 ]
